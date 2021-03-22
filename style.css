@@ -34,6 +34,7 @@ body {
   background: whitesmoke;
   color: rgb(123, 124, 123);
   font-size: 3rem;
+  overflow: hidden;
 }
 
 .display-values {
@@ -49,11 +50,18 @@ body {
   background-color: rgb(182, 189, 255);
   font-size: 2rem;
   color: white;
+  border: 0.25px solid;
+  outline: none;
 }
 .button:active {
   background-color: rgb(124, 236, 114);
 }
-
+.operator {
+  background-color: rgb(128, 136, 216);
+}
+.equal {
+  background-color: rgb(220, 245, 77);
+}
 .btn-ac {
   width: 300px;
   background: rgb(240, 78, 56);
