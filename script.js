@@ -1,111 +1,132 @@
-class Calculator {
-  constructor() {
-    this.digit = document.querySelectorAll(".digit");
-    this.operator = document.querySelectorAll(".operator");
-    this.equal = document.querySelector(".equal");
-    this.acFunc = document.querySelector(".btn-ac");
-    this.displayValues = document.querySelector(".display-values");
-    this.actualValue = "";
-    this.previousValue = "";
-    this.choice;
-    this.operation;
-  }
-  takeValues(item) {
-    const buttonValue = item.target.textContent;
-    if (item.target.classList.contains("active")) {
-      let adding = this.actualValue + buttonValue;
-      this.actualValue = adding;
-      this.choice = this.actualValue;
-      this.displayValues.textContent = this.choice;
-    } else if (!item.target.classList.contains("active")) {
-      let adding = this.previousValue + buttonValue;
-      this.previousValue = adding;
-      this.choice = this.previousValue;
-      this.displayValues.textContent = this.choice;
-    }
-  }
-  calculate() {
-    if (this.operation === "divide") {
-      this.choice =
-        parseFloat(this.previousValue) / parseFloat(this.actualValue);
-      this.displayValues.textContent = this.choice;
-      this.previousValue = this.choice;
-      this.actualValue = "";
-    }
-    if (this.operation === "multiply") {
-      this.choice =
-        parseFloat(this.previousValue) * parseFloat(this.actualValue);
-      this.displayValues.textContent = this.choice;
-      this.previousValue = this.choice;
-      this.actualValue = "";
-    }
-    if (this.operation === "add") {
-      this.choice =
-        parseFloat(this.previousValue) + parseFloat(this.actualValue);
-      this.displayValues.textContent = this.choice;
-      this.previousValue = this.choice;
-      this.actualValue = "";
-    }
-    if (this.operation === "subtract") {
-      this.choice =
-        parseFloat(this.previousValue) - parseFloat(this.actualValue);
-      this.displayValues.textContent = this.choice;
-      this.previousValue = this.choice;
-      this.actualValue = "";
-    }
-  }
-
-  operationSelected(item) {
-    const focus = item.target;
-
-    this.digit.forEach((buttons) => {
-      buttons.classList.add("active");
-    });
-
-    if (focus.classList.contains("divide")) {
-      this.operation = "divide";
-    }
-    if (focus.classList.contains("multiply")) {
-      this.operation = "multiply";
-    }
-    if (focus.classList.contains("add")) {
-      this.operation = "add";
-    }
-    if (focus.classList.contains("subtract")) {
-      this.operation = "subtract";
-    }
-  }
-
-  clearDisplay() {
-    this.displayValues.textContent = 0;
-    this.actualValue = "";
-    this.previousValue = "";
-    this.choice = "";
-    this.digit.forEach((buttons) => {
-      buttons.classList.remove("active");
-    });
-  }
-}
-
-//Create the object
-
-const calculator = new Calculator();
+//Global variables
+const calculator = document.querySelector(".calculator-body");
+const keys = document.querySelector(".calculator-keys");
+const display = document.querySelector(".display-values");
 
 //Events
+keys.addEventListener("click", (e) => {
+  const key = e.target;
+  const action = key.dataset.action;
+  const keyContent = key.textContent;
+  const displayedNum = display.textContent;
+  const previousKeyType = calculator.dataset.previousKeyType;
 
-calculator.digit.forEach((calc) => {
-  calc.addEventListener("click", function (event) {
-    calculator.takeValues(event);
-  });
+  if (e.target.matches("button")) {
+    //Number case
+    if (!action) {
+      if (
+        displayedNum === "0" ||
+        previousKeyType === "operator" ||
+        previousKeyType === "calculate"
+      ) {
+        display.textContent = keyContent;
+      } else {
+        display.textContent = displayedNum + keyContent;
+      }
+      //setting previousKey
+      calculator.dataset.previousKeyType = "number";
+    }
+    //Operator case
+    if (
+      action === "divide" ||
+      action === "subtract" ||
+      action === "multiply" ||
+      action === "add"
+    ) {
+      const firstValue = calculator.dataset.firstValue;
+      const operator = calculator.dataset.operator;
+      const secondValue = displayedNum;
+
+      if (
+        firstValue &&
+        operator &&
+        previousKeyType !== "operator" &&
+        previousKeyType !== "calculate"
+      ) {
+        const calcValue = calculate(firstValue, operator, secondValue);
+        display.textContent = calcValue;
+
+        //Update first value
+        calculator.dataset.firstValue = calcValue;
+      } else {
+        calculator.dataset.firstValue = displayedNum;
+      }
+
+      key.classList.add("choice");
+      //Add custom atribute
+      calculator.dataset.previousKeyType = "operator";
+      calculator.dataset.operator = action;
+    }
+    //Decimal case
+    if (action === "decimal") {
+      if (!displayedNum.includes(".")) {
+        display.textContent = displayedNum + ".";
+      } else if (
+        previousKeyType === "operator" ||
+        previousKeyType === "calculate"
+      ) {
+        display.textContent = displayedNum + "0.";
+      }
+
+      //setting previousKey
+      calculator.dataset.previousKeyType = "decimal";
+    }
+    //Equal case
+    if (action === "calculate") {
+      let firstValue = calculator.dataset.firstValue;
+      const operator = calculator.dataset.operator;
+      let secondValue = displayedNum;
+
+      if (firstValue) {
+        if (previousKeyType === "calculate") {
+          firstValue = displayedNum;
+          secondValue = calculator.dataset.modValue;
+        }
+      }
+
+      display.textContent = calculate(firstValue, operator, secondValue);
+
+      //setting previousKey
+      calculator.dataset.modValue = secondValue;
+      calculator.dataset.previousKeyType = "calculate";
+    }
+    //Clear case
+    if (action === "clear") {
+      if (key.textContent === "AC") {
+        calculator.dataset.firstValue = "";
+        calculator.dataset.modValue = "";
+        calculator.dataset.operator = "";
+        calculator.dataset.previousKeyType = "";
+      } else {
+        key.textContent = "AC";
+      }
+
+      display.textContent = 0;
+
+      //setting previousKey
+      calculator.dataset.previousKeyType = "clear";
+    }
+    //Remove choice class after operator--HAVE TO REPAIR
+    Array.from(key.parentNode.children).forEach((k) =>
+      k.classList.remove("choice")
+    );
+  }
 });
-calculator.operator.forEach((operators) => {
-  operators.addEventListener("click", function (event) {
-    calculator.operationSelected(event);
-  });
-});
-calculator.equal.addEventListener("click", function () {
-  calculator.calculate();
-});
-calculator.acFunc.addEventListener("click", function () {
-  calculator.clearDisplay();
-});
+
+const calculate = (n1, operator, n2) => {
+  let result = "";
+
+  if (operator === "add") {
+    result = parseFloat(n1) + parseFloat(n2);
+  } else if (operator === "subtract") {
+    result = parseFloat(n1) - parseFloat(n2);
+  } else if (operator === "divide") {
+    result = n1 / parseFloat(n2);
+  } else if (operator === "multiply") {
+    result = parseFloat(n1) * parseFloat(n2);
+  }
+
+  return result;
+};
+
+//Remain at Tim The trouble maker

@@ -43,7 +43,7 @@ body {
   right: 0rem;
 }
 
-.button {
+button {
   width: 100px;
   height: 80px;
   cursor: pointer;
@@ -53,10 +53,10 @@ body {
   border: 0.25px solid;
   outline: none;
 }
-.button:active {
+button:active {
   background-color: rgb(124, 236, 114);
 }
-.operator {
+.operator-button {
   background-color: rgb(128, 136, 216);
 }
 .equal {
@@ -70,7 +70,6 @@ body {
 .btn-0 {
   width: 200px;
 }
-
-.btn-symbol {
-  background: rgb(238, 250, 72);
+.choice {
+  background: rgb(238, 170, 131);
 }
